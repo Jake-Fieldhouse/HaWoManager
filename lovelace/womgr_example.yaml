@@ -1,0 +1,11 @@
+type: custom:bubble-card
+title: HaWoManager
+cards:
+  - type: entity
+    entity: binary_sensor.server_ping
+  - type: entity
+    entity: switch.server_wake
+  - type: button
+    entity: button.server_restart
+  - type: button
+    entity: button.server_shutdown

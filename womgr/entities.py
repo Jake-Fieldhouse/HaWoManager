@@ -16,6 +16,7 @@ class ConfigEntry:
     mac: str
     ip: str
     os_type: str
+    location: str = ""
     username: str = ""
     password: str = ""
     entities: List["WoMgrEntity"] = field(default_factory=list)
@@ -97,12 +98,13 @@ class SystemCommandSwitch(WoMgrEntity):
         subprocess.Popen(cmd)
 
 
-def setup_device(device_name: str, mac: str, ip: str, os_type: str, username: str = "", password: str = "") -> ConfigEntry:
+def setup_device(device_name: str, mac: str, ip: str, location: str, os_type: str, username: str = "", password: str = "") -> ConfigEntry:
     """Create a ConfigEntry and associated entities."""
     entry = ConfigEntry(
         device_name=device_name,
         mac=mac,
         ip=ip,
+        location=location,
         os_type=os_type,
         username=username,
         password=password,

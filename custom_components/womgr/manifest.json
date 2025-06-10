@@ -1,0 +1,9 @@
+{
+    "domain": "womgr",
+    "name": "WO Manager",
+    "version": "0.0.1",
+    "documentation": "https://example.com/docs",
+    "dependencies": [],
+    "codeowners": [],
+    "config_flow": true
+}

@@ -10,7 +10,6 @@ from homeassistant.core import HomeAssistant
 from .const import DOMAIN
 
 
-class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for WoMgr."""
 
     VERSION = 1

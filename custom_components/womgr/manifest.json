@@ -1,0 +1,7 @@
+{
+    "domain": "womgr",
+    "name": "WoMgr",
+    "version": "0.0.1",
+    "dependencies": ["wake_on_lan"],
+    "requirements": []
+}

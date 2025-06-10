@@ -36,9 +36,11 @@ updates from the Home Assistant UI:
 2. Click the three‑dot menu and select **Custom Repositories**.
 3. Enter the repository URL `https://github.com/example/HaWoManager` and set the
    category to **Integration**.
-4. After adding the repository, search for **WoMgr** under Integrations and
+4. HACS installs only from tagged releases. Ensure you select the latest release
+   rather than a specific commit.
+5. After adding the repository, search for **WoMgr** under Integrations and
    install it. Restart Home Assistant when prompted.
-5. Finally, add the **WoMgr** integration from the Integrations page as usual.
+6. Finally, add the **WoMgr** integration from the Integrations page as usual.
 
 ## Usage
 

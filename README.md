@@ -113,3 +113,7 @@ python dashboard_cli.py http://homeassistant.local:8123 YOUR_TOKEN server
 
 Repeat the command for additional devices. The script appends a card to the
 `HaWoManager` view each time it runs.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for release notes. The latest release is **v0.0.2**.

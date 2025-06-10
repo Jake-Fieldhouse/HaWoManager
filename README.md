@@ -72,11 +72,11 @@ The command arguments are `DEVICE_NAME` `MAC` `IP` `LOCATION` `OS_TYPE` and the 
 
 The last argument chooses the action: `wol`, `ping`, `restart`, or `shutdown`.
 Credentials for system commands can be provided with `--username` and
-`--password` options.
+`--password` options. The ping command automatically adjusts parameters for Windows or Linux hosts.
 
 ## Home Assistant Integration
 
-Copy the `custom_components/womgr` folder into your Home Assistant `config/custom_components` directory and restart Home Assistant.  After restart, add the **WoMgr** integration from the Integrations page and provide the device name, MAC address, IP, location and operating system when prompted.  Username and password are optional and only needed for restart or shutdown commands.  When you add the first device, the integration creates a **HaWoManager** dashboard and inserts a Bubble Card for the device.  Additional devices are appended to the same dashboard automatically.
+Copy the `custom_components/womgr` folder into your Home Assistant `config/custom_components` directory and restart Home Assistant.  Add the **WoMgr** integration from the Integrations page.  The initial setup can be completed without specifying a device so you may install the integration first and add devices later.  Simply run **Add Integration** again for each machine you want to manage and enter its name, MAC address, IP, location and operating system.  Username and password remain optional and are only needed for restart or shutdown commands.  When the first device is added, the integration creates a **HaWoManager** dashboard and inserts a Bubble Card for the device.  Additional devices are appended to the same dashboard automatically.
 
 ### Example Dashboard
 

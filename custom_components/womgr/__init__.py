@@ -26,6 +26,8 @@ PLATFORMS: list[str] = ["switch", "binary_sensor", "button"]
 
 async def _async_update_dashboard(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Ensure a HaWoManager dashboard exists and contains the device card."""
+    if not entry.data:
+        return
     lovelace = hass.data.get("lovelace")
     if not lovelace:
         return
@@ -79,6 +81,8 @@ async def _async_update_dashboard(hass: HomeAssistant, entry: ConfigEntry) -> No
 
 async def _async_remove_dashboard_card(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Remove the card for a device when the entry is unloaded."""
+    if not entry.data:
+        return
     lovelace = hass.data.get("lovelace")
     if not lovelace:
         return
@@ -113,6 +117,10 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up WoMgr from a config entry."""
     hass.data.setdefault(DOMAIN, {})
+    if not entry.data:
+        # Base configuration entry, nothing to set up yet
+        return True
+
     hass.data[DOMAIN][entry.entry_id] = setup_device(**entry.data)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     hass.async_create_task(_async_update_dashboard(hass, entry))
@@ -122,6 +130,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a WoMgr config entry."""
     await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-    remove_device(hass.data[DOMAIN].pop(entry.entry_id))
-    await _async_remove_dashboard_card(hass, entry)
+    config = hass.data[DOMAIN].pop(entry.entry_id, None)
+    if config:
+        remove_device(config)
+        await _async_remove_dashboard_card(hass, entry)
     return True

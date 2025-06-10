@@ -5,7 +5,7 @@ from __future__ import annotations
 from homeassistant.components.binary_sensor import BinarySensorEntity
 
 from .const import DOMAIN
-from womgr.entities import PingBinarySensor
+from .core.entities import PingBinarySensor
 
 
 async def async_setup_entry(hass, entry, async_add_entities):

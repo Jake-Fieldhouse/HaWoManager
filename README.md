@@ -108,3 +108,9 @@ python dashboard_cli.py http://homeassistant.local:8123 YOUR_TOKEN server
 
 Repeat the command for additional devices. The script appends a card to the
 `HaWoManager` view each time it runs.
+
+## Behavior Overview
+
+Once installed via HACS or manual copy, the **WoMgr** integration lets you add devices through the Home Assistant Integrations page. Each configured device yields four entities (wake switch, ping sensor, restart button and shutdown button) that are automatically placed in the HaWoManager dashboard. The dashboard is created on first device addition if it doesn't exist. Removing the integration deletes the card from the dashboard.
+
+The same functionality can be accessed from the command line using `womgr_cli.py` for quick Wake-on-LAN, ping, restart or shutdown commands.

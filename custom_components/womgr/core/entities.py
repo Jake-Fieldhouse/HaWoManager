@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 import socket
 import subprocess
+import sys
 from typing import List
 
 
@@ -62,14 +63,12 @@ class PingBinarySensor(WoMgrEntity):
         self.is_on = False
 
     def update(self) -> bool:
-        result = subprocess.run([
-            "ping",
-            "-c",
-            "1",
-            "-W",
-            "1",
-            self.ip,
-        ], stdout=subprocess.DEVNULL)
+        args = ["ping"]
+        if sys.platform.startswith("win"):
+            args += ["-n", "1", "-w", "1000", self.ip]
+        else:
+            args += ["-c", "1", "-W", "1", self.ip]
+        result = subprocess.run(args, stdout=subprocess.DEVNULL)
         self.is_on = result.returncode == 0
         return self.is_on
 

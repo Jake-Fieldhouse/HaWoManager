@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.0.4] - 2025-06-11
+### Added
+- Optional initial setup without specifying a device
+- Windows-compatible ping parameters
+
+The release is tagged as `v0.0.4`.
+
 ## [0.0.3] - 2025-06-10
 ### Fixed
 - Bundled library so HACS installs work

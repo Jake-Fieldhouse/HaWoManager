@@ -13,10 +13,29 @@ from .const import DOMAIN
 class WoMgrConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for WoMgr."""
 
-    VERSION = 1
+    VERSION = 2
 
     async def async_step_user(self, user_input: dict | None = None):
-        """Handle the initial step."""
+        """Initial step for integration setup."""
+        base_exists = any(not entry.data for entry in self._async_current_entries())
+
+        if not base_exists:
+            if user_input is not None:
+                if not user_input.get("add_device"):
+                    await self.async_set_unique_id(DOMAIN)
+                    self._abort_if_unique_id_configured()
+                    return self.async_create_entry(title="HaWoManager", data={})
+                return await self.async_step_device()
+
+            return self.async_show_form(
+                step_id="user",
+                data_schema=vol.Schema({vol.Optional("add_device", default=False): bool}),
+            )
+
+        return await self.async_step_device(user_input)
+
+    async def async_step_device(self, user_input: dict | None = None):
+        """Collect device information to create a config entry."""
         if user_input is not None:
             return self.async_create_entry(
                 title=user_input["device_name"],
@@ -35,4 +54,4 @@ class WoMgrConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             }
         )
 
-        return self.async_show_form(step_id="user", data_schema=data_schema)
+        return self.async_show_form(step_id="device", data_schema=data_schema)

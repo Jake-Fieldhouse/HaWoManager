@@ -18,6 +18,9 @@ cd HaWoManager
 pip install .
 ```
 
+The installation pulls in the `requests` package, which is required for the
+`dashboard_cli.py` helper script.
+
 Alternatively, install directly from GitHub:
 
 ```bash

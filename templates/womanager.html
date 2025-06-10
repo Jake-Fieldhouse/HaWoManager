@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>WoManager</title>
+    <link rel="stylesheet" href="/static/styles.css">
+  </head>
+  <body>
+    <h1>WoManager Dashboard</h1>
+    <div class="grid">
+      {% for d in devices %}
+      <div class="card">
+        <h2>{{ d.name }}</h2>
+        <p>Status: {% if d.status %}Online{% else %}Offline{% endif %}</p>
+        <div class="actions">
+          <form method="post" action="/wol/{{ d.mac }}">
+            <button type="submit">Wake</button>
+          </form>
+          <form method="post" action="/restart/{{ d.ip }}">
+            <button type="submit">Restart</button>
+          </form>
+          <form method="post" action="/shutdown/{{ d.ip }}">
+            <button type="submit">Shutdown</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </body>
+</html>

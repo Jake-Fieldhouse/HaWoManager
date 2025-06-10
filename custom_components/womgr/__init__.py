@@ -17,7 +17,7 @@ from homeassistant.components.lovelace.dashboard import (
     ConfigNotFound,
 )
 
-from womgr import setup_device, remove_device
+from .core import setup_device, remove_device
 
 from .const import DOMAIN
 

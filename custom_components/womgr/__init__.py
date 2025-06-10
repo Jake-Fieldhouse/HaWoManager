@@ -101,48 +101,12 @@ async def _async_remove_dashboard_card(hass: HomeAssistant, entry: ConfigEntry) 
     cards = view.get("cards", [])
     view["cards"] = [c for c in cards if c.get("title") != entry.data["device_name"]]
 
-
-    view = next((v for v in config.get("views", []) if v.get("path") == "womgr"), None)
-    card = {
-        "type": "custom:bubble-card",
-        "title": entry.data["device_name"],
-        "cards": [
-            {"type": "entity", "entity": f"binary_sensor.{entry.data['device_name']}_ping"},
-            {"type": "entity", "entity": f"switch.{entry.data['device_name']}_wake"},
-            {"type": "button", "entity": f"button.{entry.data['device_name']}_restart"},
-            {"type": "button", "entity": f"button.{entry.data['device_name']}_shutdown"},
-        ],
-    }
-
-    if view is None:
-        view = {"path": "womgr", "title": "HaWoManager", "cards": [card]}
-        config.setdefault("views", []).append(view)
-    else:
-        view.setdefault("cards", [])
-        view["cards"].append(card)
-
     await dashboard.async_save(config)
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up the WoMgr component from YAML."""
     hass.data.setdefault(DOMAIN, {})
-    return True
-
-
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up WoMgr from a config entry."""
-    hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN][entry.entry_id] = setup_device(**entry.data)
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    hass.async_create_task(_async_update_dashboard(hass, entry))
-    return True
-
-
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Unload a WoMgr config entry."""
-    await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-    remove_device(hass.data[DOMAIN].pop(entry.entry_id))
     return True
 
 

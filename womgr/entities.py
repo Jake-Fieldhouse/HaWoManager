@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 import socket
 import subprocess
 import sys
+import shutil
 from typing import List
 
 from .util import parse_mac_address
@@ -86,16 +87,19 @@ class SystemCommandSwitch(WoMgrEntity):
 
     def restart(self) -> None:
         if self.os_type == "windows":
-            cmd = ["shutdown", "/r", "/t", "0"]
+            shutdown_bin = shutil.which("shutdown") or "shutdown"
+            cmd = [shutdown_bin, "/r", "/t", "0"]
         else:
-            cmd = ["sudo", "reboot"]
+            reboot_bin = shutil.which("reboot") or "reboot"
+            cmd = ["sudo", reboot_bin]
         subprocess.Popen(cmd)
 
     def shutdown(self) -> None:
+        shutdown_bin = shutil.which("shutdown") or "shutdown"
         if self.os_type == "windows":
-            cmd = ["shutdown", "/s", "/t", "0"]
+            cmd = [shutdown_bin, "/s", "/t", "0"]
         else:
-            cmd = ["sudo", "shutdown", "-h", "now"]
+            cmd = ["sudo", shutdown_bin, "-h", "now"]
         subprocess.Popen(cmd)
 
 

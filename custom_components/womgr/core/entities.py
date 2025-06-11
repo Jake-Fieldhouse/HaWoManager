@@ -4,7 +4,7 @@ import subprocess
 import sys
 from typing import List
 
-from womgr.util import parse_mac_address
+from ..util import parse_mac_address
 
 
 def _create_entity_id(device_name: str, entity: str) -> str:

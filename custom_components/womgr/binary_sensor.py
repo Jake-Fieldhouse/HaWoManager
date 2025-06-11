@@ -23,7 +23,7 @@ class WoMgrPingBinarySensor(BinarySensorEntity):
         self._attr_name = f"{sensor.device_name} Ping"
 
     async def async_update(self) -> None:
-        await self.hass.async_add_executor_job(self._sensor.update)
+        await self._sensor.update()
 
     @property
     def is_on(self) -> bool:

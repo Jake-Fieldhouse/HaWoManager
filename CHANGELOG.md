@@ -8,6 +8,15 @@ All notable changes to this project will be documented in this file.
 
 The release is tagged as `v0.0.6`.
 
+## [0.0.7] - 2025-06-14
+### Added
+- Token can be provided via `HASS_TOKEN` environment variable
+- Optional `--path` for custom dashboard URL
+### Changed
+- Requests to Home Assistant API show friendly error messages
+
+The release is tagged as `v0.0.7`.
+
 ## [0.0.5] - 2025-06-12
 ### Added
 - Bubble Card pop-up layout for device cards

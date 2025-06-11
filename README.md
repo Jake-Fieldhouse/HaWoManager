@@ -128,4 +128,4 @@ Repeat the command for additional devices. The script appends a card to the
 
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md) for release notes. The latest release is **v0.0.5**.
+See [CHANGELOG.md](CHANGELOG.md) for release notes. The latest release is **v0.0.6**.

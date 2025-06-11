@@ -1,6 +1,6 @@
 {
   "name": "HaWoManager",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "content_in_root": false,
   "homeassistant": "2023.0.0",
   "render_readme": true

@@ -57,14 +57,30 @@ async def _async_update_dashboard(hass: HomeAssistant, entry: ConfigEntry) -> No
 
 
     view = next((v for v in config.get("views", []) if v.get("path") == "womgr"), None)
+    hash_tag = f"#womgr-{entry.data['device_name']}"
     card = {
-        "type": "custom:bubble-card",
+        "type": "vertical-stack",
         "title": entry.data["device_name"],
         "cards": [
-            {"type": "entity", "entity": f"binary_sensor.{entry.data['device_name']}_ping"},
-            {"type": "entity", "entity": f"switch.{entry.data['device_name']}_wake"},
-            {"type": "button", "entity": f"button.{entry.data['device_name']}_restart"},
-            {"type": "button", "entity": f"button.{entry.data['device_name']}_shutdown"},
+            {
+                "type": "custom:bubble-card",
+                "card_type": "pop-up",
+                "hash": hash_tag,
+                "cards": [
+                    {"type": "entity", "entity": f"binary_sensor.{entry.data['device_name']}_ping"},
+                    {"type": "entity", "entity": f"switch.{entry.data['device_name']}_wake"},
+                    {"type": "button", "entity": f"button.{entry.data['device_name']}_restart"},
+                    {"type": "button", "entity": f"button.{entry.data['device_name']}_shutdown"},
+                ],
+            },
+            {
+                "type": "custom:bubble-card",
+                "card_type": "button",
+                "name": entry.data["device_name"],
+                "icon": "mdi:server-network",
+                "tap_action": {"action": "navigate", "navigation_path": hash_tag},
+                "show_state": False,
+            },
         ],
     }
 

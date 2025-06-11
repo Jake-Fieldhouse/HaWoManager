@@ -11,14 +11,30 @@ def create_dashboard(url: str, token: str, device_name: str):
     config = resp.json()
 
     view = next((v for v in config.get("views", []) if v.get("path") == "womgr"), None)
+    hash_tag = f"#womgr-{device_name}"
     card = {
-        "type": "custom:bubble-card",
-        "title": "HaWoManager",
+        "type": "vertical-stack",
+        "title": device_name,
         "cards": [
-            {"type": "entity", "entity": f"binary_sensor.{device_name}_ping"},
-            {"type": "entity", "entity": f"switch.{device_name}_wake"},
-            {"type": "button", "entity": f"button.{device_name}_restart"},
-            {"type": "button", "entity": f"button.{device_name}_shutdown"},
+            {
+                "type": "custom:bubble-card",
+                "card_type": "pop-up",
+                "hash": hash_tag,
+                "cards": [
+                    {"type": "entity", "entity": f"binary_sensor.{device_name}_ping"},
+                    {"type": "entity", "entity": f"switch.{device_name}_wake"},
+                    {"type": "button", "entity": f"button.{device_name}_restart"},
+                    {"type": "button", "entity": f"button.{device_name}_shutdown"},
+                ],
+            },
+            {
+                "type": "custom:bubble-card",
+                "card_type": "button",
+                "name": device_name,
+                "icon": "mdi:server-network",
+                "tap_action": {"action": "navigate", "navigation_path": hash_tag},
+                "show_state": False,
+            },
         ],
     }
 

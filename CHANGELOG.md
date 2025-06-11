@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.0.5] - 2025-06-12
+### Added
+- Bubble Card pop-up layout for device cards
+
+The release is tagged as `v0.0.5`.
+
 ## [0.0.4] - 2025-06-11
 ### Added
 - Optional initial setup without specifying a device

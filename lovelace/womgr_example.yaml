@@ -1,11 +1,23 @@
-type: custom:bubble-card
+type: vertical-stack
 title: HaWoManager
 cards:
-  - type: entity
-    entity: binary_sensor.server_ping
-  - type: entity
-    entity: switch.server_wake
-  - type: button
-    entity: button.server_restart
-  - type: button
-    entity: button.server_shutdown
+  - type: custom:bubble-card
+    card_type: pop-up
+    hash: '#server'
+    cards:
+      - type: entity
+        entity: binary_sensor.server_ping
+      - type: entity
+        entity: switch.server_wake
+      - type: button
+        entity: button.server_restart
+      - type: button
+        entity: button.server_shutdown
+  - type: custom:bubble-card
+    card_type: button
+    name: Server
+    icon: mdi:server-network
+    tap_action:
+      action: navigate
+      navigation_path: '#server'
+    show_state: false

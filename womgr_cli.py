@@ -5,6 +5,7 @@ from womgr import (
     PingBinarySensor,
     SystemCommandSwitch,
 )
+from womgr.util import parse_mac_address
 
 
 def main() -> None:
@@ -32,6 +33,12 @@ def main() -> None:
 
     args = parser.parse_args()
 
+    try:
+        parse_mac_address(args.mac)
+    except ValueError:
+        print("Invalid MAC address")
+        return
+
     entry = setup_device(
         device_name=args.device_name,
         mac=args.mac,
@@ -47,7 +54,11 @@ def main() -> None:
     system = next(e for e in entry.entities if isinstance(e, SystemCommandSwitch))
 
     if args.command == "wol":
-        wol.turn_on()
+        try:
+            wol.turn_on()
+        except ValueError as exc:
+            print(str(exc))
+            return
     elif args.command == "ping":
         success = ping.update()
         print("Device is reachable" if success else "Device is not reachable")

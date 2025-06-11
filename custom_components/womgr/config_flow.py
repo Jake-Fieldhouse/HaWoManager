@@ -7,6 +7,8 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 
+from womgr.util import parse_mac_address
+
 from .const import DOMAIN
 
 
@@ -36,11 +38,18 @@ class WoMgrConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_device(self, user_input: dict | None = None):
         """Collect device information to create a config entry."""
+        errors = {}
         if user_input is not None:
-            return self.async_create_entry(
-                title=user_input["device_name"],
-                data=user_input,
-            )
+            try:
+                parse_mac_address(user_input["mac"])
+            except ValueError:
+                errors["mac"] = "invalid_mac"
+
+            if not errors:
+                return self.async_create_entry(
+                    title=user_input["device_name"],
+                    data=user_input,
+                )
 
         data_schema = vol.Schema(
             {
@@ -54,4 +63,6 @@ class WoMgrConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             }
         )
 
-        return self.async_show_form(step_id="device", data_schema=data_schema)
+        return self.async_show_form(
+            step_id="device", data_schema=data_schema, errors=errors
+        )

@@ -4,6 +4,8 @@ import subprocess
 import sys
 from typing import List
 
+from womgr.util import parse_mac_address
+
 
 def _create_entity_id(device_name: str, entity: str) -> str:
     return f"womgr_{device_name}_{entity}"
@@ -47,7 +49,7 @@ class WakeOnLanSwitch(WoMgrEntity):
         self.mac = mac
 
     def turn_on(self) -> None:
-        mac_bytes = bytes.fromhex(self.mac.replace(":", ""))
+        mac_bytes = parse_mac_address(self.mac)
         packet = b"\xff" * 6 + mac_bytes * 16
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)

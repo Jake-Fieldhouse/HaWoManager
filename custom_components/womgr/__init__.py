@@ -15,7 +15,6 @@ from homeassistant.components.lovelace.const import (
 from homeassistant.components.lovelace.dashboard import (
     DashboardsCollection,
     LovelaceStorage,
-    ConfigNotFound,
 )
 
 from .core import setup_device, remove_device
@@ -36,6 +35,8 @@ async def _async_update_dashboard(hass: HomeAssistant, entry: ConfigEntry) -> No
     lovelace = hass.data.get("lovelace")
     if not lovelace:
         return
+
+    from homeassistant.components.lovelace.dashboard import ConfigNotFound
 
     dashboards: dict = getattr(lovelace, "dashboards", lovelace.get("dashboards", {}))
     dashboards_collection: DashboardsCollection = getattr(
@@ -60,8 +61,11 @@ async def _async_update_dashboard(hass: HomeAssistant, entry: ConfigEntry) -> No
 
         try:
             config = await dashboard.async_load(False)
-        except ConfigNotFound:
-            config = {"views": []}
+        except Exception as exc:  # ConfigNotFound in tests
+            if exc.__class__.__name__ == "ConfigNotFound":
+                config = {"views": []}
+            else:
+                raise
 
         view = next((v for v in config.get("views", []) if v.get("path") == "womgr"), None)
         hash_tag = f"#womgr-{entry.data['device_name']}"
@@ -114,6 +118,8 @@ async def _async_remove_dashboard_card(hass: HomeAssistant, entry: ConfigEntry) 
     if not lovelace:
         return
 
+    from homeassistant.components.lovelace.dashboard import ConfigNotFound
+
     dashboards: dict = getattr(lovelace, "dashboards", lovelace.get("dashboards", {}))
     if "womgr" not in dashboards:
         return
@@ -123,8 +129,10 @@ async def _async_remove_dashboard_card(hass: HomeAssistant, entry: ConfigEntry) 
 
         try:
             config = await dashboard.async_load(False)
-        except ConfigNotFound:
-            return
+        except Exception as exc:  # ConfigNotFound in tests
+            if exc.__class__.__name__ == "ConfigNotFound":
+                return
+            raise
 
         view = next((v for v in config.get("views", []) if v.get("path") == "womgr"), None)
         if view is None:

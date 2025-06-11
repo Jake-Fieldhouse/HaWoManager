@@ -173,40 +173,6 @@ class SystemCommandSwitch(WoMgrEntity):
         raise ValueError(f"Unsupported OS type: {self.os_type}")
 
 
-def setup_device(device_name: str, mac: str, ip: str, location: str, os_type: str, username: str = "", password: str = "") -> ConfigEntry:
-    """Create a ConfigEntry and associated entities."""
-=======
-            shutdown_bin = self.shutdown_cmd or shutil.which("shutdown")
-            if not shutdown_bin:
-                logger.warning("shutdown command not found for %s", self.device_name)
-                return
-            cmd = [shutdown_bin, "/r", "/t", "0"]
-        else:
-            reboot_bin = self.reboot_cmd or shutil.which("reboot")
-            if not reboot_bin:
-                logger.warning("reboot command not found for %s", self.device_name)
-                return
-            cmd = ["sudo", reboot_bin]
-        try:
-            subprocess.Popen(cmd)
-        except Exception as exc:
-            logger.error("Failed to execute %s: %s", cmd[0], exc)
-
-    def shutdown(self) -> None:
-        shutdown_bin = self.shutdown_cmd or shutil.which("shutdown")
-        if not shutdown_bin:
-            logger.warning("shutdown command not found for %s", self.device_name)
-            return
-        if self.os_type == "windows":
-            cmd = [shutdown_bin, "/s", "/t", "0"]
-        else:
-            cmd = ["sudo", shutdown_bin, "-h", "now"]
-        try:
-            subprocess.Popen(cmd)
-        except Exception as exc:
-            logger.error("Failed to execute %s: %s", cmd[0], exc)
-
-
 def setup_device(
     device_name: str,
     mac: str,

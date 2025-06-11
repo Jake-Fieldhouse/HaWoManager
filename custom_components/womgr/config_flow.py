@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from ipaddress import ip_address
+
 import voluptuous as vol
 
 from homeassistant import config_entries
@@ -44,6 +46,20 @@ class WoMgrConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 parse_mac_address(user_input["mac"])
             except ValueError:
                 errors["mac"] = "invalid_mac"
+
+            try:
+                ip_address(user_input["ip"])
+            except ValueError:
+                errors["ip"] = "invalid_ip"
+
+            if not errors:
+                for entry in self._async_current_entries():
+                    if not entry.data:
+                        continue
+                    if entry.data.get("device_name") == user_input["device_name"]:
+                        return self.async_abort(reason="duplicate_device_name")
+                    if entry.data.get("mac") == user_input["mac"]:
+                        return self.async_abort(reason="duplicate_mac")
 
             if not errors:
                 return self.async_create_entry(

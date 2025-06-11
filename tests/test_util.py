@@ -4,14 +4,19 @@ from womgr.util import parse_mac_address
 
 class TestParseMacAddress(unittest.TestCase):
     def test_valid_mac(self):
-        self.assertEqual(
-            parse_mac_address("AA:BB:CC:DD:EE:FF"),
-            bytes.fromhex("aabbccddeeff"),
-        )
-        self.assertEqual(
-            parse_mac_address("aa-bb-cc-dd-ee-ff"),
-            bytes.fromhex("aabbccddeeff"),
-        )
+        valid_cases = [
+            "AA:BB:CC:DD:EE:FF",
+            "aa:bb:cc:dd:ee:ff",
+            "AA-BB-CC-DD-EE-FF",
+            "aa-bb-cc-dd-ee-ff",
+            "AA-BB:CC-DD:EE-FF",
+        ]
+        for mac in valid_cases:
+            with self.subTest(mac=mac):
+                self.assertEqual(
+                    parse_mac_address(mac),
+                    bytes.fromhex("aabbccddeeff"),
+                )
 
     def test_invalid_mac(self):
         with self.assertRaises(ValueError):

@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
+
 import asyncio
+import logging
 import socket
 import subprocess
 import sys
@@ -7,6 +9,8 @@ import shutil
 from typing import List
 
 from ..util import parse_mac_address
+
+logger = logging.getLogger(__name__)
 
 
 def _create_entity_id(device_name: str, entity: str) -> str:
@@ -46,16 +50,33 @@ class WoMgrEntity:
 class WakeOnLanSwitch(WoMgrEntity):
     """Switch that sends a Wake-on-LAN magic packet."""
 
-    def __init__(self, device_name: str, mac: str) -> None:
+    def __init__(
+        self,
+        device_name: str,
+        mac: str,
+        broadcast: str = "<broadcast>",
+        port: int = 9,
+    ) -> None:
         super().__init__(device_name, "wol")
         self.mac = mac
+        self.broadcast = broadcast
+        self.port = port
 
     def turn_on(self) -> None:
         mac_bytes = parse_mac_address(self.mac)
         packet = b"\xff" * 6 + mac_bytes * 16
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-            sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-            sock.sendto(packet, ("<broadcast>", 9))
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+                sock.sendto(packet, (self.broadcast, self.port))
+        except OSError as exc:
+            logger = logging.getLogger(__name__)
+            logger.error(
+                "Failed to send WOL packet to %s:%s: %s",
+                self.broadcast,
+                self.port,
+                exc,
+            )
 
 
 class PingBinarySensor(WoMgrEntity):
@@ -93,32 +114,70 @@ class PingBinarySensor(WoMgrEntity):
 class SystemCommandSwitch(WoMgrEntity):
     """Switch that issues restart or shutdown commands."""
 
-    def __init__(self, device_name: str, os_type: str, username: str = "", password: str = "") -> None:
+    def __init__(
+        self,
+        device_name: str,
+        os_type: str,
+        username: str = "",
+        password: str = "",
+        shutdown_cmd: str | None = None,
+        reboot_cmd: str | None = None,
+    ) -> None:
         super().__init__(device_name, "system")
         self.os_type = os_type.lower()
         self.username = username
         self.password = password
+        self.shutdown_cmd = shutdown_cmd
+        self.reboot_cmd = reboot_cmd
 
     def restart(self) -> None:
         if self.os_type == "windows":
-            shutdown_bin = shutil.which("shutdown") or "shutdown"
+            shutdown_bin = self.shutdown_cmd or shutil.which("shutdown")
+            if not shutdown_bin:
+                logger.warning("shutdown command not found for %s", self.device_name)
+                return
             cmd = [shutdown_bin, "/r", "/t", "0"]
         else:
-            reboot_bin = shutil.which("reboot") or "reboot"
+            reboot_bin = self.reboot_cmd or shutil.which("reboot")
+            if not reboot_bin:
+                logger.warning("reboot command not found for %s", self.device_name)
+                return
             cmd = ["sudo", reboot_bin]
-        subprocess.Popen(cmd)
+        try:
+            subprocess.Popen(cmd)
+        except Exception as exc:
+            logger.error("Failed to execute %s: %s", cmd[0], exc)
 
     def shutdown(self) -> None:
-        shutdown_bin = shutil.which("shutdown") or "shutdown"
+        shutdown_bin = self.shutdown_cmd or shutil.which("shutdown")
+        if not shutdown_bin:
+            logger.warning("shutdown command not found for %s", self.device_name)
+            return
         if self.os_type == "windows":
             cmd = [shutdown_bin, "/s", "/t", "0"]
         else:
             cmd = ["sudo", shutdown_bin, "-h", "now"]
-        subprocess.Popen(cmd)
+        try:
+            subprocess.Popen(cmd)
+        except Exception as exc:
+            logger.error("Failed to execute %s: %s", cmd[0], exc)
 
 
-def setup_device(device_name: str, mac: str, ip: str, location: str, os_type: str, username: str = "", password: str = "") -> ConfigEntry:
-    """Create a ConfigEntry and associated entities."""
+def setup_device(
+    device_name: str,
+    mac: str,
+    ip: str,
+    location: str,
+    os_type: str,
+    username: str = "",
+    password: str = "",
+    broadcast: str = "<broadcast>",
+    port: int = 9,
+) -> ConfigEntry:
+    """Create a ConfigEntry and associated entities.
+
+    Wake-on-LAN packets use ``broadcast`` and ``port`` when initialized.
+    """
     entry = ConfigEntry(
         device_name=device_name,
         mac=mac,
@@ -129,7 +188,7 @@ def setup_device(device_name: str, mac: str, ip: str, location: str, os_type: st
         password=password,
     )
 
-    entry.add_entity(WakeOnLanSwitch(device_name, mac))
+    entry.add_entity(WakeOnLanSwitch(device_name, mac, broadcast, port))
     entry.add_entity(PingBinarySensor(device_name, ip))
     entry.add_entity(SystemCommandSwitch(device_name, os_type, username, password))
     return entry

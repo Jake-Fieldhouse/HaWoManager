@@ -61,6 +61,10 @@ entry = setup_device(
 remove_device(entry)
 ```
 
+Wake-on-LAN packets are sent to `<broadcast>` on UDP port `9` by default.
+Use the optional `broadcast` and `port` arguments of `setup_device()` to
+override these values.
+
 ### CLI Usage
 
 For simple one-off commands you can use `womgr_cli.py`:

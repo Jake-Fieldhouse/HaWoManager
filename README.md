@@ -83,17 +83,29 @@ Copy the `custom_components/womgr` folder into your Home Assistant `config/custo
 Below is a minimal example using the community "Bubble Card".  An example file is provided at `lovelace/womgr_example.yaml`.  Import it into your dashboard or copy the following snippet:
 
 ```yaml
-type: custom:bubble-card
+type: vertical-stack
 title: HaWoManager
 cards:
-  - type: entity
-    entity: binary_sensor.server_ping
-  - type: entity
-    entity: switch.server_wake
-  - type: button
-    entity: button.server_restart
-  - type: button
-    entity: button.server_shutdown
+  - type: custom:bubble-card
+    card_type: pop-up
+    hash: '#server'
+    cards:
+      - type: entity
+        entity: binary_sensor.server_ping
+      - type: entity
+        entity: switch.server_wake
+      - type: button
+        entity: button.server_restart
+      - type: button
+        entity: button.server_shutdown
+  - type: custom:bubble-card
+    card_type: button
+    name: Server
+    icon: mdi:server-network
+    tap_action:
+      action: navigate
+      navigation_path: '#server'
+    show_state: false
 ```
 
 This example assumes the device was added with the name `server`.
@@ -116,4 +128,4 @@ Repeat the command for additional devices. The script appends a card to the
 
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md) for release notes. The latest release is **v0.0.3**.
+See [CHANGELOG.md](CHANGELOG.md) for release notes. The latest release is **v0.0.5**.

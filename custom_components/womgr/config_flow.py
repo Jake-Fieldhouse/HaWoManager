@@ -7,7 +7,7 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 
-from womgr.util import parse_mac_address
+from .util import parse_mac_address
 
 from .const import DOMAIN
 

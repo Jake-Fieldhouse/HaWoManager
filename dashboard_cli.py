@@ -1,9 +1,10 @@
 import argparse
 import json
 import requests
+from womgr import pastel_color
 
 
-def create_dashboard(url: str, token: str, device_name: str):
+def create_dashboard(url: str, token: str, device_name: str, color: str | None = None):
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     # Fetch existing Lovelace config
     resp = requests.get(f"{url}/api/lovelace/config", headers=headers, timeout=10)
@@ -12,6 +13,7 @@ def create_dashboard(url: str, token: str, device_name: str):
 
     view = next((v for v in config.get("views", []) if v.get("path") == "womgr"), None)
     hash_tag = f"#womgr-{device_name}"
+    color = color or pastel_color(device_name)
     card = {
         "type": "vertical-stack",
         "title": device_name,
@@ -34,6 +36,7 @@ def create_dashboard(url: str, token: str, device_name: str):
                 "icon": "mdi:server-network",
                 "tap_action": {"action": "navigate", "navigation_path": hash_tag},
                 "show_state": False,
+                "style": f"ha-card {{ background-color: {color}; }}",
             },
         ],
     }
@@ -58,9 +61,10 @@ def main():
     parser.add_argument("url", help="Base URL of Home Assistant, e.g. http://hass:8123")
     parser.add_argument("token", help="Long-Lived Access Token")
     parser.add_argument("device_name", help="Device name used in HaWoManager")
+    parser.add_argument("--color", help="Bubble card background color", default=None)
     args = parser.parse_args()
 
-    create_dashboard(args.url, args.token, args.device_name)
+    create_dashboard(args.url, args.token, args.device_name, args.color)
 
 
 if __name__ == "__main__":

@@ -21,3 +21,7 @@ cards:
       action: navigate
       navigation_path: '#server'
     show_state: false
+    style: |
+      ha-card {
+        background-color: rgb(200, 230, 255);
+      }

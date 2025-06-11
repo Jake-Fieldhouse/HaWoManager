@@ -25,6 +25,9 @@ def main() -> None:
     parser.add_argument(
         "--password", default="", help="Password for restart/shutdown commands"
     )
+    parser.add_argument(
+        "--color", default="", help="Bubble card background color"
+    )
 
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("wol", help="Send Wake-on-LAN packet")
@@ -55,6 +58,7 @@ def main() -> None:
         os_type=args.os_type,
         username=args.username,
         password=args.password,
+        color=args.color,
     )
 
     wol = next(e for e in entry.entities if isinstance(e, WakeOnLanSwitch))

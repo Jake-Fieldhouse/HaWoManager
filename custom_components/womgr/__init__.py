@@ -18,6 +18,7 @@ from homeassistant.components.lovelace.dashboard import (
 )
 
 from .core import setup_device, remove_device
+from womgr import pastel_color
 
 from .const import DOMAIN
 
@@ -68,6 +69,7 @@ async def _async_update_dashboard(hass: HomeAssistant, entry: ConfigEntry) -> No
                 raise
 
         view = next((v for v in config.get("views", []) if v.get("path") == "womgr"), None)
+        color = entry.data.get("color") or pastel_color(entry.data["device_name"])
         hash_tag = f"#womgr-{entry.data['device_name']}"
         card = {
             "type": "vertical-stack",
@@ -91,6 +93,7 @@ async def _async_update_dashboard(hass: HomeAssistant, entry: ConfigEntry) -> No
                     "icon": "mdi:server-network",
                     "tap_action": {"action": "navigate", "navigation_path": hash_tag},
                     "show_state": False,
+                    **({"style": f"ha-card {{ background-color: {color}; }}"}),
                 },
             ],
         }

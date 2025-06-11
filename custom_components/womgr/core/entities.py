@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+import ipaddress
 import socket
 import subprocess
 import sys
@@ -10,6 +11,9 @@ from ..util import parse_mac_address
 
 def _create_entity_id(device_name: str, entity: str) -> str:
     return f"womgr_{device_name}_{entity}"
+
+
+_existing_devices: set[str] = set()
 
 
 @dataclass
@@ -84,6 +88,7 @@ class SystemCommandSwitch(WoMgrEntity):
         self.os_type = os_type.lower()
         self.username = username
         self.password = password
+        self.process: subprocess.Popen | None = None
 
     def restart(self) -> None:
         if self.os_type == "windows":
@@ -92,7 +97,7 @@ class SystemCommandSwitch(WoMgrEntity):
         else:
             reboot_bin = shutil.which("reboot") or "reboot"
             cmd = ["sudo", reboot_bin]
-        subprocess.Popen(cmd)
+        self.process = subprocess.Popen(cmd)
 
     def shutdown(self) -> None:
         shutdown_bin = shutil.which("shutdown") or "shutdown"
@@ -100,11 +105,15 @@ class SystemCommandSwitch(WoMgrEntity):
             cmd = [shutdown_bin, "/s", "/t", "0"]
         else:
             cmd = ["sudo", shutdown_bin, "-h", "now"]
-        subprocess.Popen(cmd)
+        self.process = subprocess.Popen(cmd)
 
 
 def setup_device(device_name: str, mac: str, ip: str, location: str, os_type: str, username: str = "", password: str = "") -> ConfigEntry:
     """Create a ConfigEntry and associated entities."""
+    ipaddress.ip_address(ip)
+    if device_name in _existing_devices:
+        raise ValueError("Device name already exists")
+
     entry = ConfigEntry(
         device_name=device_name,
         mac=mac,
@@ -118,9 +127,18 @@ def setup_device(device_name: str, mac: str, ip: str, location: str, os_type: st
     entry.add_entity(WakeOnLanSwitch(device_name, mac))
     entry.add_entity(PingBinarySensor(device_name, ip))
     entry.add_entity(SystemCommandSwitch(device_name, os_type, username, password))
+    _existing_devices.add(device_name)
     return entry
 
 
 def remove_device(entry: ConfigEntry) -> None:
     """Remove all entities associated with the config entry."""
+    for ent in entry.entities:
+        if isinstance(ent, SystemCommandSwitch) and ent.process and ent.process.poll() is None:
+            ent.process.terminate()
+            try:
+                ent.process.wait(timeout=5)
+            except Exception:
+                pass
     entry.remove_entities()
+    _existing_devices.discard(entry.device_name)

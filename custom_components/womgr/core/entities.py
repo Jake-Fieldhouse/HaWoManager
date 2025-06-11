@@ -48,16 +48,33 @@ class WoMgrEntity:
 class WakeOnLanSwitch(WoMgrEntity):
     """Switch that sends a Wake-on-LAN magic packet."""
 
-    def __init__(self, device_name: str, mac: str) -> None:
+    def __init__(
+        self,
+        device_name: str,
+        mac: str,
+        broadcast: str = "<broadcast>",
+        port: int = 9,
+    ) -> None:
         super().__init__(device_name, "wol")
         self.mac = mac
+        self.broadcast = broadcast
+        self.port = port
 
     def turn_on(self) -> None:
         mac_bytes = parse_mac_address(self.mac)
         packet = b"\xff" * 6 + mac_bytes * 16
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-            sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-            sock.sendto(packet, ("<broadcast>", 9))
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+                sock.sendto(packet, (self.broadcast, self.port))
+        except OSError as exc:
+            logger = logging.getLogger(__name__)
+            logger.error(
+                "Failed to send WOL packet to %s:%s: %s",
+                self.broadcast,
+                self.port,
+                exc,
+            )
 
 
 class PingBinarySensor(WoMgrEntity):
@@ -131,8 +148,21 @@ class SystemCommandSwitch(WoMgrEntity):
             logger.error("Failed to execute %s: %s", cmd[0], exc)
 
 
-def setup_device(device_name: str, mac: str, ip: str, location: str, os_type: str, username: str = "", password: str = "") -> ConfigEntry:
-    """Create a ConfigEntry and associated entities."""
+def setup_device(
+    device_name: str,
+    mac: str,
+    ip: str,
+    location: str,
+    os_type: str,
+    username: str = "",
+    password: str = "",
+    broadcast: str = "<broadcast>",
+    port: int = 9,
+) -> ConfigEntry:
+    """Create a ConfigEntry and associated entities.
+
+    Wake-on-LAN packets use ``broadcast`` and ``port`` when initialized.
+    """
     entry = ConfigEntry(
         device_name=device_name,
         mac=mac,
@@ -143,7 +173,7 @@ def setup_device(device_name: str, mac: str, ip: str, location: str, os_type: st
         password=password,
     )
 
-    entry.add_entity(WakeOnLanSwitch(device_name, mac))
+    entry.add_entity(WakeOnLanSwitch(device_name, mac, broadcast, port))
     entry.add_entity(PingBinarySensor(device_name, ip))
     entry.add_entity(SystemCommandSwitch(device_name, os_type, username, password))
     return entry

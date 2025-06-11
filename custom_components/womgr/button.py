@@ -27,10 +27,16 @@ class _SystemButton(ButtonEntity):
 
 
 class WoMgrRestartButton(_SystemButton):
+    def __init__(self, system: SystemCommandSwitch) -> None:
+        super().__init__(system, "restart")
+
     async def async_press(self) -> None:
         await self.hass.async_add_executor_job(self._system.restart)
 
 
 class WoMgrShutdownButton(_SystemButton):
+    def __init__(self, system: SystemCommandSwitch) -> None:
+        super().__init__(system, "shutdown")
+
     async def async_press(self) -> None:
         await self.hass.async_add_executor_job(self._system.shutdown)

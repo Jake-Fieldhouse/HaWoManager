@@ -31,6 +31,9 @@ def main() -> None:
     subparsers.add_parser("ping", help="Ping the device")
     subparsers.add_parser("restart", help="Restart the device")
     subparsers.add_parser("shutdown", help="Shut down the device")
+    subparsers.add_parser(
+        "status", help="Check ping and system command availability"
+    )
 
     args = parser.parse_args()
 
@@ -38,6 +41,10 @@ def main() -> None:
         parse_mac_address(args.mac)
     except ValueError:
         print("Invalid MAC address")
+        return
+
+    if args.os_type.lower() not in {"linux", "windows"}:
+        print(f"Invalid OS type: {args.os_type}. Choose 'linux' or 'windows'.")
         return
 
     entry = setup_device(
@@ -64,9 +71,25 @@ def main() -> None:
         success = asyncio.run(ping.update())
         print("Device is reachable" if success else "Device is not reachable")
     elif args.command == "restart":
-        system.restart()
+        try:
+            system.restart()
+        except (FileNotFoundError, ValueError) as exc:
+            print(str(exc))
     elif args.command == "shutdown":
-        system.shutdown()
+        try:
+            system.shutdown()
+        except (FileNotFoundError, ValueError) as exc:
+            print(str(exc))
+    elif args.command == "status":
+        success = ping.update()
+        print("Device is reachable" if success else "Device is not reachable")
+        try:
+            availability = system.available_commands()
+            print(
+                f"Restart available: {availability['restart']}\nShutdown available: {availability['shutdown']}"
+            )
+        except ValueError as exc:
+            print(str(exc))
 
 
 if __name__ == "__main__":

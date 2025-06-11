@@ -129,8 +129,53 @@ class SystemCommandSwitch(WoMgrEntity):
         self.shutdown_cmd = shutdown_cmd
         self.reboot_cmd = reboot_cmd
 
-    def restart(self) -> None:
+    def _restart_command(self) -> list[str]:
         if self.os_type == "windows":
+
+            shutdown_bin = shutil.which("shutdown")
+            if shutdown_bin is None:
+                raise FileNotFoundError("shutdown command not found")
+            return [shutdown_bin, "/r", "/t", "0"]
+        if self.os_type == "linux":
+            reboot_bin = shutil.which("reboot")
+            if reboot_bin is None:
+                raise FileNotFoundError("reboot command not found")
+            return ["sudo", reboot_bin]
+        raise ValueError(f"Unsupported OS type: {self.os_type}")
+
+    def _shutdown_command(self) -> list[str]:
+        shutdown_bin = shutil.which("shutdown")
+        if shutdown_bin is None:
+            raise FileNotFoundError("shutdown command not found")
+        if self.os_type == "windows":
+            return [shutdown_bin, "/s", "/t", "0"]
+        if self.os_type == "linux":
+            return ["sudo", shutdown_bin, "-h", "now"]
+        raise ValueError(f"Unsupported OS type: {self.os_type}")
+
+    def restart(self) -> None:
+        cmd = self._restart_command()
+        subprocess.Popen(cmd)
+
+    def shutdown(self) -> None:
+        cmd = self._shutdown_command()
+        subprocess.Popen(cmd)
+
+    def available_commands(self) -> dict[str, bool]:
+        if self.os_type == "windows":
+            shutdown_bin = shutil.which("shutdown")
+            return {"restart": shutdown_bin is not None, "shutdown": shutdown_bin is not None}
+        if self.os_type == "linux":
+            return {
+                "restart": shutil.which("reboot") is not None,
+                "shutdown": shutil.which("shutdown") is not None,
+            }
+        raise ValueError(f"Unsupported OS type: {self.os_type}")
+
+
+def setup_device(device_name: str, mac: str, ip: str, location: str, os_type: str, username: str = "", password: str = "") -> ConfigEntry:
+    """Create a ConfigEntry and associated entities."""
+=======
             shutdown_bin = self.shutdown_cmd or shutil.which("shutdown")
             if not shutdown_bin:
                 logger.warning("shutdown command not found for %s", self.device_name)

@@ -5,6 +5,7 @@ from __future__ import annotations
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType
+import asyncio
 from homeassistant.components.lovelace.const import (
     CONF_ALLOW_SINGLE_WORD,
     CONF_ICON,
@@ -24,6 +25,10 @@ from .const import DOMAIN
 PLATFORMS: list[str] = ["switch", "binary_sensor", "button"]
 
 
+# Lock used to serialize dashboard modifications
+_dashboard_lock = asyncio.Lock()
+
+
 async def _async_update_dashboard(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Ensure a HaWoManager dashboard exists and contains the device card."""
     if not entry.data:
@@ -40,61 +45,65 @@ async def _async_update_dashboard(hass: HomeAssistant, entry: ConfigEntry) -> No
     if dashboards_collection is None:
         return
 
-    if "womgr" not in dashboards:
-        await dashboards_collection.async_create_item(
-            {
-                CONF_ALLOW_SINGLE_WORD: True,
-                CONF_ICON: "mdi:server-network",
-                CONF_TITLE: "HaWoManager",
-                CONF_URL_PATH: "womgr",
-            }
-        )
+    async with _dashboard_lock:
+        if "womgr" not in dashboards:
+            await dashboards_collection.async_create_item(
+                {
+                    CONF_ALLOW_SINGLE_WORD: True,
+                    CONF_ICON: "mdi:server-network",
+                    CONF_TITLE: "HaWoManager",
+                    CONF_URL_PATH: "womgr",
+                }
+            )
 
-    dashboard: LovelaceStorage = dashboards["womgr"]
+        dashboard: LovelaceStorage = dashboards["womgr"]
 
-    try:
-        config = await dashboard.async_load(False)
-    except ConfigNotFound:
-        config = {"views": []}
+        try:
+            config = await dashboard.async_load(False)
+        except ConfigNotFound:
+            config = {"views": []}
 
+        view = next((v for v in config.get("views", []) if v.get("path") == "womgr"), None)
+        hash_tag = f"#womgr-{entry.data['device_name']}"
+        card = {
+            "type": "vertical-stack",
+            "title": entry.data["device_name"],
+            "cards": [
+                {
+                    "type": "custom:bubble-card",
+                    "card_type": "pop-up",
+                    "hash": hash_tag,
+                    "cards": [
+                        {"type": "entity", "entity": f"binary_sensor.{entry.data['device_name']}_ping"},
+                        {"type": "entity", "entity": f"switch.{entry.data['device_name']}_wake"},
+                        {"type": "button", "entity": f"button.{entry.data['device_name']}_restart"},
+                        {"type": "button", "entity": f"button.{entry.data['device_name']}_shutdown"},
+                    ],
+                },
+                {
+                    "type": "custom:bubble-card",
+                    "card_type": "button",
+                    "name": entry.data["device_name"],
+                    "icon": "mdi:server-network",
+                    "tap_action": {"action": "navigate", "navigation_path": hash_tag},
+                    "show_state": False,
+                },
+            ],
+        }
 
-    view = next((v for v in config.get("views", []) if v.get("path") == "womgr"), None)
-    hash_tag = f"#womgr-{entry.data['device_name']}"
-    card = {
-        "type": "vertical-stack",
-        "title": entry.data["device_name"],
-        "cards": [
-            {
-                "type": "custom:bubble-card",
-                "card_type": "pop-up",
-                "hash": hash_tag,
-                "cards": [
-                    {"type": "entity", "entity": f"binary_sensor.{entry.data['device_name']}_ping"},
-                    {"type": "entity", "entity": f"switch.{entry.data['device_name']}_wake"},
-                    {"type": "button", "entity": f"button.{entry.data['device_name']}_restart"},
-                    {"type": "button", "entity": f"button.{entry.data['device_name']}_shutdown"},
-                ],
-            },
-            {
-                "type": "custom:bubble-card",
-                "card_type": "button",
-                "name": entry.data["device_name"],
-                "icon": "mdi:server-network",
-                "tap_action": {"action": "navigate", "navigation_path": hash_tag},
-                "show_state": False,
-            },
-        ],
-    }
+        if view is None:
+            view = {"path": "womgr", "title": "HaWoManager", "cards": [card]}
+            config.setdefault("views", []).append(view)
+        else:
+            view.setdefault("cards", [])
+            for idx, existing in enumerate(view["cards"]):
+                if existing.get("title") == entry.data["device_name"]:
+                    view["cards"][idx] = card
+                    break
+            else:
+                view["cards"].append(card)
 
-    if view is None:
-        view = {"path": "womgr", "title": "HaWoManager", "cards": [card]}
-        config.setdefault("views", []).append(view)
-    else:
-        view.setdefault("cards", [])
-        if not any(c.get("title") == entry.data["device_name"] for c in view["cards"]):
-            view["cards"].append(card)
-
-    await dashboard.async_save(config)
+        await dashboard.async_save(config)
 
 
 async def _async_remove_dashboard_card(hass: HomeAssistant, entry: ConfigEntry) -> None:
@@ -109,21 +118,22 @@ async def _async_remove_dashboard_card(hass: HomeAssistant, entry: ConfigEntry) 
     if "womgr" not in dashboards:
         return
 
-    dashboard: LovelaceStorage = dashboards["womgr"]
+    async with _dashboard_lock:
+        dashboard: LovelaceStorage = dashboards["womgr"]
 
-    try:
-        config = await dashboard.async_load(False)
-    except ConfigNotFound:
-        return
+        try:
+            config = await dashboard.async_load(False)
+        except ConfigNotFound:
+            return
 
-    view = next((v for v in config.get("views", []) if v.get("path") == "womgr"), None)
-    if view is None:
-        return
+        view = next((v for v in config.get("views", []) if v.get("path") == "womgr"), None)
+        if view is None:
+            return
 
-    cards = view.get("cards", [])
-    view["cards"] = [c for c in cards if c.get("title") != entry.data["device_name"]]
+        cards = view.get("cards", [])
+        view["cards"] = [c for c in cards if c.get("title") != entry.data["device_name"]]
 
-    await dashboard.async_save(config)
+        await dashboard.async_save(config)
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:

@@ -77,6 +77,7 @@ def _valid_input(**overrides):
         "os_type": "linux",
         "username": "",
         "password": "",
+        "color": "",
     }
     data.update(overrides)
     return data

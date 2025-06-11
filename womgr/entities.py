@@ -27,6 +27,7 @@ class ConfigEntry:
     location: str = ""
     username: str = ""
     password: str = ""
+    color: str = ""
     entities: List["WoMgrEntity"] = field(default_factory=list)
 
     def add_entity(self, entity: "WoMgrEntity") -> None:
@@ -181,6 +182,7 @@ def setup_device(
     os_type: str,
     username: str = "",
     password: str = "",
+    color: str = "",
     broadcast: str = "<broadcast>",
     port: int = 9,
 ) -> ConfigEntry:
@@ -196,6 +198,7 @@ def setup_device(
         os_type=os_type,
         username=username,
         password=password,
+        color=color,
     )
 
     entry.add_entity(WakeOnLanSwitch(device_name, mac, broadcast, port))

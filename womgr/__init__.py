@@ -8,6 +8,7 @@ from .entities import (
     setup_device,
     remove_device,
 )
+from .util import pastel_color
 
 __all__ = [
     "ConfigEntry",
@@ -16,4 +17,5 @@ __all__ = [
     "WakeOnLanSwitch",
     "setup_device",
     "remove_device",
+    "pastel_color",
 ]

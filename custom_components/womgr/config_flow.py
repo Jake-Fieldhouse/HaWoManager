@@ -76,6 +76,7 @@ class WoMgrConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 vol.Required("os_type", default="linux"): vol.In(["linux", "windows"]),
                 vol.Optional("username", default=""): str,
                 vol.Optional("password", default=""): str,
+                vol.Optional("color", default=""): str,
             }
         )
 

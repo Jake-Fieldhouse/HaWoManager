@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import hashlib
 
 
 _MAC_RE = re.compile(r"^[0-9A-Fa-f]{2}([:-]?[0-9A-Fa-f]{2}){5}$")
@@ -24,3 +25,12 @@ def parse_mac_address(mac: str) -> bytes:
         return bytes.fromhex(cleaned)
     except ValueError as exc:
         raise ValueError("Invalid MAC address") from exc
+
+
+def pastel_color(seed: str) -> str:
+    """Generate a pastel RGB color based on a seed string."""
+    h = hashlib.md5(seed.encode()).hexdigest()
+    r = (int(h[0:2], 16) + 255) // 2
+    g = (int(h[2:4], 16) + 255) // 2
+    b = (int(h[4:6], 16) + 255) // 2
+    return f"rgb({r}, {g}, {b})"

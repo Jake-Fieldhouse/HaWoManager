@@ -120,12 +120,16 @@ create the view and insert the card.  Provide your Home Assistant URL and a
 long-lived access token:
 
 ```bash
-python dashboard_cli.py http://homeassistant.local:8123 YOUR_TOKEN server
+# pass the token via an environment variable or --token
+HASS_TOKEN=YOUR_TOKEN python dashboard_cli.py http://homeassistant.local:8123 server
 ```
+
+Specify a custom dashboard URL path with `--path` if you don't want to use the
+default `womgr` path.
 
 Repeat the command for additional devices. The script appends a card to the
 `HaWoManager` view each time it runs.
 
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md) for release notes. The latest release is **v0.0.6**.
+See [CHANGELOG.md](CHANGELOG.md) for release notes. The latest release is **v0.0.7**.

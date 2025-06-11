@@ -85,22 +85,47 @@ class SystemCommandSwitch(WoMgrEntity):
         self.username = username
         self.password = password
 
-    def restart(self) -> None:
+    def _restart_command(self) -> list[str]:
         if self.os_type == "windows":
-            shutdown_bin = shutil.which("shutdown") or "shutdown"
-            cmd = [shutdown_bin, "/r", "/t", "0"]
-        else:
-            reboot_bin = shutil.which("reboot") or "reboot"
-            cmd = ["sudo", reboot_bin]
+            shutdown_bin = shutil.which("shutdown")
+            if shutdown_bin is None:
+                raise FileNotFoundError("shutdown command not found")
+            return [shutdown_bin, "/r", "/t", "0"]
+        if self.os_type == "linux":
+            reboot_bin = shutil.which("reboot")
+            if reboot_bin is None:
+                raise FileNotFoundError("reboot command not found")
+            return ["sudo", reboot_bin]
+        raise ValueError(f"Unsupported OS type: {self.os_type}")
+
+    def _shutdown_command(self) -> list[str]:
+        shutdown_bin = shutil.which("shutdown")
+        if shutdown_bin is None:
+            raise FileNotFoundError("shutdown command not found")
+        if self.os_type == "windows":
+            return [shutdown_bin, "/s", "/t", "0"]
+        if self.os_type == "linux":
+            return ["sudo", shutdown_bin, "-h", "now"]
+        raise ValueError(f"Unsupported OS type: {self.os_type}")
+
+    def restart(self) -> None:
+        cmd = self._restart_command()
         subprocess.Popen(cmd)
 
     def shutdown(self) -> None:
-        shutdown_bin = shutil.which("shutdown") or "shutdown"
-        if self.os_type == "windows":
-            cmd = [shutdown_bin, "/s", "/t", "0"]
-        else:
-            cmd = ["sudo", shutdown_bin, "-h", "now"]
+        cmd = self._shutdown_command()
         subprocess.Popen(cmd)
+
+    def available_commands(self) -> dict[str, bool]:
+        if self.os_type == "windows":
+            shutdown_bin = shutil.which("shutdown")
+            return {"restart": shutdown_bin is not None, "shutdown": shutdown_bin is not None}
+        if self.os_type == "linux":
+            return {
+                "restart": shutil.which("reboot") is not None,
+                "shutdown": shutil.which("shutdown") is not None,
+            }
+        raise ValueError(f"Unsupported OS type: {self.os_type}")
 
 
 def setup_device(device_name: str, mac: str, ip: str, location: str, os_type: str, username: str = "", password: str = "") -> ConfigEntry:

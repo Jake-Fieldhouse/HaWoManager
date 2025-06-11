@@ -70,9 +70,15 @@ python womgr_cli.py DEVICE_NAME AA:BB:CC:DD:EE:FF 192.0.2.10 Office linux ping
 ```
 The command arguments are `DEVICE_NAME` `MAC` `IP` `LOCATION` `OS_TYPE` and the desired action.
 
-The last argument chooses the action: `wol`, `ping`, `restart`, or `shutdown`.
-Credentials for system commands can be provided with `--username` and
+The last argument chooses the action: `wol`, `ping`, `restart`, `shutdown`, or
+`status`. Credentials for system commands can be provided with `--username` and
 `--password` options. The ping command automatically adjusts parameters for Windows or Linux hosts.
+
+Example to check both reachability and command availability:
+
+```bash
+python womgr_cli.py DEVICE_NAME AA:BB:CC:DD:EE:FF 192.0.2.10 Office linux status
+```
 
 ## Home Assistant Integration
 

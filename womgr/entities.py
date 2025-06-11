@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+import asyncio
 import logging
 import socket
 import subprocess
@@ -85,14 +86,27 @@ class PingBinarySensor(WoMgrEntity):
         self.ip = ip
         self.is_on = False
 
-    def update(self) -> bool:
-        args = ["ping"]
+    def _build_ping_args(self) -> list[str]:
+        ping_bin = shutil.which("ping") or "ping"
+        args = [ping_bin]
         if sys.platform.startswith("win"):
             args += ["-n", "1", "-w", "1000", self.ip]
         else:
             args += ["-c", "1", "-W", "1", self.ip]
-        result = subprocess.run(args, stdout=subprocess.DEVNULL)
-        self.is_on = result.returncode == 0
+        return args
+
+    async def update(self) -> bool:
+        args = self._build_ping_args()
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                *args,
+                stdout=asyncio.subprocess.DEVNULL,
+                stderr=asyncio.subprocess.DEVNULL,
+            )
+            await proc.communicate()
+            self.is_on = proc.returncode == 0
+        except FileNotFoundError:
+            self.is_on = False
         return self.is_on
 
 

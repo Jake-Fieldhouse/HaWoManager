@@ -1,4 +1,5 @@
 import argparse
+import asyncio
 from womgr import (
     setup_device,
     WakeOnLanSwitch,
@@ -60,7 +61,7 @@ def main() -> None:
             print(str(exc))
             return
     elif args.command == "ping":
-        success = ping.update()
+        success = asyncio.run(ping.update())
         print("Device is reachable" if success else "Device is not reachable")
     elif args.command == "restart":
         system.restart()

@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.0.6] - 2025-06-13
+### Fixed
+- Use lovelace property access for Home Assistant 2026.2 compatibility
+
+The release is tagged as `v0.0.6`.
+
 ## [0.0.5] - 2025-06-12
 ### Added
 - Bubble Card pop-up layout for device cards

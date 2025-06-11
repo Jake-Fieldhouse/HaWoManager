@@ -32,8 +32,10 @@ async def _async_update_dashboard(hass: HomeAssistant, entry: ConfigEntry) -> No
     if not lovelace:
         return
 
-    dashboards: dict = lovelace.get("dashboards", {})
-    dashboards_collection: DashboardsCollection = lovelace.get("dashboards_collection")
+    dashboards: dict = getattr(lovelace, "dashboards", lovelace.get("dashboards", {}))
+    dashboards_collection: DashboardsCollection = getattr(
+        lovelace, "dashboards_collection", lovelace.get("dashboards_collection")
+    )
 
     if dashboards_collection is None:
         return
@@ -103,7 +105,7 @@ async def _async_remove_dashboard_card(hass: HomeAssistant, entry: ConfigEntry) 
     if not lovelace:
         return
 
-    dashboards: dict = lovelace.get("dashboards", {})
+    dashboards: dict = getattr(lovelace, "dashboards", lovelace.get("dashboards", {}))
     if "womgr" not in dashboards:
         return
 

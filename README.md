@@ -19,8 +19,6 @@ Entities created by the utilities follow the naming scheme
 
 ## Home Assistant Integration
 After installing via HACS, add the **WoMgr** integration from the Integrations page. The initial setup can be completed without specifying a device so you may install the integration first and add devices later. Simply run **Add Integration** again for each machine you want to manage and enter its name, MAC address, IP, location and operating system. Username and password remain optional and are only needed for restart or shutdown commands. You can also provide a custom dashboard or view name instead of the default `womgr`. When the first device is added, the integration creates a **HaWoManager** dashboard and inserts a Bubble Card for the device. Additional devices are appended to the chosen dashboard automatically. You may also set a pastel color for the device's button.
-=======
-
 
 ## Usage
 
@@ -93,4 +91,4 @@ This example assumes the device was added with the name `server`.
 
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md) for release notes. The latest release is **v0.0.8**.
+See [CHANGELOG.md](CHANGELOG.md) for release notes. The latest release is **v0.0.9**.

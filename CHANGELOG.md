@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.0.9] - 2025-07-12
+### Added
+- Permanent sidebar panel for device management.
+
 ## [0.0.8] - 2025-07-11
 ### Removed
 - CLI functionality and `pip` installation instructions. The integration is now

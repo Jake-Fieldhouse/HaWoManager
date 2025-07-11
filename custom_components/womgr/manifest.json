@@ -1,7 +1,7 @@
 {
     "domain": "womgr",
     "name": "WoMgr",
-    "version": "0.0.8",
+    "version": "0.0.9",
     "config_flow": true,
     "requirements": []
 }

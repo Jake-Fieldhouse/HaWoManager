@@ -34,3 +34,19 @@ def pastel_color(seed: str) -> str:
     g = (int(h[2:4], 16) + 255) // 2
     b = (int(h[4:6], 16) + 255) // 2
     return f"rgb({r}, {g}, {b})"
+
+
+_SLUG_RE = re.compile(r"[^a-z0-9_]+")
+
+
+def slugify(text: str) -> str:
+    """Return a slugified version of ``text``.
+
+    The result contains only lowercase letters, digits and underscores.
+    Whitespace and dashes are converted to underscores and any other
+    characters are stripped.
+    """
+
+    text = text.strip().lower().replace("-", "_").replace(" ", "_")
+    text = _SLUG_RE.sub("_", text)
+    return re.sub(r"_+", "_", text).strip("_")

@@ -1,6 +1,6 @@
 import unittest
 
-from womgr.util import parse_mac_address, pastel_color
+from womgr.util import parse_mac_address, pastel_color, slugify
 
 class TestParseMacAddress(unittest.TestCase):
     def test_valid_mac(self):
@@ -32,6 +32,14 @@ class TestPastelColor(unittest.TestCase):
     def test_format(self):
         color = pastel_color("dev")
         self.assertRegex(color, r"rgb\(\d{1,3}, \d{1,3}, \d{1,3}\)")
+
+
+class TestSlugify(unittest.TestCase):
+    def test_basic(self):
+        self.assertEqual(slugify("My Device"), "my_device")
+
+    def test_strip_invalid(self):
+        self.assertEqual(slugify("Dev!@# Name"), "dev_name")
 
 if __name__ == "__main__":
     unittest.main()

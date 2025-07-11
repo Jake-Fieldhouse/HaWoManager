@@ -9,11 +9,13 @@ from typing import List
 
 logger = logging.getLogger(__name__)
 
-from .util import parse_mac_address
+from .util import parse_mac_address, slugify
 
 
 def _create_entity_id(device_name: str, entity: str) -> str:
-    return f"womgr_{device_name}_{entity}"
+    """Generate a valid entity ID for a device."""
+    name = slugify(device_name)
+    return f"womgr_{name}_{entity}"
 
 
 @dataclass

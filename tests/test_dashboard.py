@@ -38,8 +38,9 @@ class DummyDashboardsCollection:
         self.dashboards = dashboards
 
     async def async_create_item(self, cfg):
-        self.dashboards["womgr"] = DummyLovelaceStorage()
-        return self.dashboards["womgr"]
+        path = cfg["url_path"]
+        self.dashboards[path] = DummyLovelaceStorage()
+        return self.dashboards[path]
 
 class ConfigNotFound(Exception):
     pass
@@ -96,6 +97,7 @@ def test_no_duplicate_cards_when_setup_called_twice():
                 "ip": "0.0.0.0",
                 "location": "here",
                 "os_type": "linux",
+                "dashboard": "",
             },
             entry_id="1",
         )
@@ -107,10 +109,54 @@ def test_no_duplicate_cards_when_setup_called_twice():
 
         await asyncio.gather(*tasks)
 
-        dashboard = dashboards["womgr"]
+        path = entry.data["dashboard"] or "womgr"
+        dashboard = dashboards[path]
         config = await dashboard.async_load(False)
-        view = next(v for v in config.get("views", []) if v.get("path") == "womgr")
+        view = next(v for v in config.get("views", []) if v.get("path") == path)
         cards = [c for c in view.get("cards", []) if c.get("title") == "server"]
         assert len(cards) == 1
+
+    asyncio.run(run_test())
+
+
+def test_custom_dashboard_path():
+    async def run_test():
+        dashboards = {}
+        lovelace_data = {
+            "dashboards": dashboards,
+            "dashboards_collection": DummyDashboardsCollection(dashboards),
+        }
+        tasks = []
+
+        def async_create_task(coro):
+            task = asyncio.create_task(coro)
+            tasks.append(task)
+            return task
+
+        hass = SimpleNamespace(
+            data={DOMAIN: {}, "lovelace": lovelace_data},
+            config_entries=DummyConfigEntries(),
+            async_create_task=async_create_task,
+        )
+
+        entry = SimpleNamespace(
+            data={
+                "device_name": "server",
+                "mac": "00:11:22:33:44:55",
+                "ip": "0.0.0.0",
+                "location": "here",
+                "os_type": "linux",
+                "dashboard": "customdash",
+            },
+            entry_id="1",
+        )
+
+        await async_setup_entry(hass, entry)
+        await asyncio.gather(*tasks)
+
+        dashboard = dashboards["customdash"]
+        config = await dashboard.async_load(False)
+        view = next(v for v in config.get("views", []) if v.get("path") == "customdash")
+        assert view is not None
 
     asyncio.run(run_test())

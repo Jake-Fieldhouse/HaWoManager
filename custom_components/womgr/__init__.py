@@ -6,6 +6,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType
 import asyncio
+import os
 from homeassistant.components.lovelace.const import (
     CONF_ALLOW_SINGLE_WORD,
     CONF_ICON,
@@ -153,6 +154,17 @@ async def _async_remove_dashboard_card(hass: HomeAssistant, entry: ConfigEntry) 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up the WoMgr component from YAML."""
     hass.data.setdefault(DOMAIN, {})
+
+    panel_path = os.path.join(os.path.dirname(__file__), "www", "panel.html")
+    hass.http.register_static_path("/womgr-panel", panel_path, False)
+    hass.components.frontend.async_register_built_in_panel(
+        "iframe",
+        "HaWoManager",
+        "mdi:server-network",
+        "womgr",
+        {"url": "/womgr-panel"},
+        require_admin=True,
+    )
     return True
 
 

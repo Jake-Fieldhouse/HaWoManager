@@ -85,7 +85,7 @@ def main() -> None:
         except (FileNotFoundError, ValueError) as exc:
             print(str(exc))
     elif args.command == "status":
-        success = ping.update()
+        success = asyncio.run(ping.update())
         print("Device is reachable" if success else "Device is not reachable")
         try:
             availability = system.available_commands()

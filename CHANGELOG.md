@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.0.8] - 2025-07-11
+### Removed
+- CLI functionality and `pip` installation instructions. The integration is now
+  installed exclusively through HACS.
+
+
 ## [0.0.7] - 2025-06-14
 ### Added
 - CLI entry points for `womgr-cli` and `dashboard-cli` scripts

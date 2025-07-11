@@ -16,6 +16,12 @@ Entities created by the utilities follow the naming scheme
    Restart Home Assistant when prompted.
 
 
+
+## Home Assistant Integration
+After installing via HACS, add the **WoMgr** integration from the Integrations page. The initial setup can be completed without specifying a device so you may install the integration first and add devices later. Simply run **Add Integration** again for each machine you want to manage and enter its name, MAC address, IP, location and operating system. Username and password remain optional and are only needed for restart or shutdown commands. You can also provide a custom dashboard or view name instead of the default `womgr`. When the first device is added, the integration creates a **HaWoManager** dashboard and inserts a Bubble Card for the device. Additional devices are appended to the chosen dashboard automatically. You may also set a pastel color for the device's button.
+=======
+
+
 ## Usage
 
 ```python
@@ -46,11 +52,13 @@ The `color` argument lets you pick a pastel background for the Bubble Card butto
 
 After installing via HACS, add the **WoMgr** integration from the Integrations page.  The initial setup can be completed without specifying a device so you may install the integration first and add devices later.  Simply run **Add Integration** again for each machine you want to manage and enter its name, MAC address, IP, location and operating system.  Username and password remain optional and are only needed for restart or shutdown commands.  You can also provide a custom dashboard or view name instead of the default `womgr`.  When the first device is added, the integration creates a **HaWoManager** dashboard and inserts a Bubble Card for the device.  Additional devices are appended to the chosen dashboard automatically. You may also set a pastel color for the device's button.
 
+
 ### Example Dashboard
 
 Below is a minimal example using the community "Bubble Card".  An example file is provided at `lovelace/womgr_example.yaml`.  Import it into your dashboard or copy the following snippet:
 
 ```yaml
+
 type: vertical-stack
 title: HaWoManager
 cards:

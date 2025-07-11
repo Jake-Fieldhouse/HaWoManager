@@ -18,7 +18,7 @@ from homeassistant.components.lovelace.dashboard import (
 )
 
 from .core import setup_device, remove_device
-from womgr import pastel_color
+from .womgr import pastel_color
 
 from .const import DOMAIN
 

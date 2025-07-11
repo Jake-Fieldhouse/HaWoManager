@@ -10,5 +10,8 @@ setup(
         "custom_components.*",
     ]),
     include_package_data=True,
+
+
     install_requires=[],
+main
 )

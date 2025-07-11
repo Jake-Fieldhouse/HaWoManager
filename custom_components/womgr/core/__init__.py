@@ -1,6 +1,6 @@
 """Simple device management utilities."""
 
-from .entities import (
+from womgr.entities import (
     ConfigEntry,
     PingBinarySensor,
     SystemCommandSwitch,

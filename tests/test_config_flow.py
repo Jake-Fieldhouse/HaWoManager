@@ -78,6 +78,7 @@ def _valid_input(**overrides):
         "username": "",
         "password": "",
         "color": "",
+        "dashboard": "",
     }
     data.update(overrides)
     return data

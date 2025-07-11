@@ -47,18 +47,20 @@ async def _async_update_dashboard(hass: HomeAssistant, entry: ConfigEntry) -> No
     if dashboards_collection is None:
         return
 
+    view_path = entry.data.get("dashboard") or "womgr"
+
     async with _dashboard_lock:
-        if "womgr" not in dashboards:
+        if view_path not in dashboards:
             await dashboards_collection.async_create_item(
                 {
                     CONF_ALLOW_SINGLE_WORD: True,
                     CONF_ICON: "mdi:server-network",
                     CONF_TITLE: "HaWoManager",
-                    CONF_URL_PATH: "womgr",
+                    CONF_URL_PATH: view_path,
                 }
             )
 
-        dashboard: LovelaceStorage = dashboards["womgr"]
+        dashboard: LovelaceStorage = dashboards[view_path]
 
         try:
             config = await dashboard.async_load(False)
@@ -68,9 +70,9 @@ async def _async_update_dashboard(hass: HomeAssistant, entry: ConfigEntry) -> No
             else:
                 raise
 
-        view = next((v for v in config.get("views", []) if v.get("path") == "womgr"), None)
+        view = next((v for v in config.get("views", []) if v.get("path") == view_path), None)
         color = entry.data.get("color") or pastel_color(entry.data["device_name"])
-        hash_tag = f"#womgr-{entry.data['device_name']}"
+        hash_tag = f"#{view_path}-{entry.data['device_name']}"
         card = {
             "type": "vertical-stack",
             "title": entry.data["device_name"],
@@ -99,7 +101,7 @@ async def _async_update_dashboard(hass: HomeAssistant, entry: ConfigEntry) -> No
         }
 
         if view is None:
-            view = {"path": "womgr", "title": "HaWoManager", "cards": [card]}
+            view = {"path": view_path, "title": "HaWoManager", "cards": [card]}
             config.setdefault("views", []).append(view)
         else:
             view.setdefault("cards", [])
@@ -124,11 +126,12 @@ async def _async_remove_dashboard_card(hass: HomeAssistant, entry: ConfigEntry) 
     from homeassistant.components.lovelace.dashboard import ConfigNotFound
 
     dashboards: dict = getattr(lovelace, "dashboards", lovelace.get("dashboards", {}))
-    if "womgr" not in dashboards:
+    view_path = entry.data.get("dashboard") or "womgr"
+    if view_path not in dashboards:
         return
 
     async with _dashboard_lock:
-        dashboard: LovelaceStorage = dashboards["womgr"]
+        dashboard: LovelaceStorage = dashboards[view_path]
 
         try:
             config = await dashboard.async_load(False)
@@ -137,7 +140,7 @@ async def _async_remove_dashboard_card(hass: HomeAssistant, entry: ConfigEntry) 
                 return
             raise
 
-        view = next((v for v in config.get("views", []) if v.get("path") == "womgr"), None)
+        view = next((v for v in config.get("views", []) if v.get("path") == view_path), None)
         if view is None:
             return
 
@@ -160,7 +163,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         # Base configuration entry, nothing to set up yet
         return True
 
-    hass.data[DOMAIN][entry.entry_id] = setup_device(**entry.data)
+    setup_args = {k: v for k, v in entry.data.items() if k != "dashboard"}
+    hass.data[DOMAIN][entry.entry_id] = setup_device(**setup_args)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     hass.async_create_task(_async_update_dashboard(hass, entry))
     return True

@@ -5,7 +5,7 @@ from __future__ import annotations
 from homeassistant.components.button import ButtonEntity
 
 from .const import DOMAIN
-from .core.entities import SystemCommandSwitch
+from womgr.entities import SystemCommandSwitch
 
 
 async def async_setup_entry(hass, entry, async_add_entities):

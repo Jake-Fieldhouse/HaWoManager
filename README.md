@@ -16,8 +16,43 @@ Entities created by the utilities follow the naming scheme
    Restart Home Assistant when prompted.
 
 
+
 ## Home Assistant Integration
 After installing via HACS, add the **WoMgr** integration from the Integrations page. The initial setup can be completed without specifying a device so you may install the integration first and add devices later. Simply run **Add Integration** again for each machine you want to manage and enter its name, MAC address, IP, location and operating system. Username and password remain optional and are only needed for restart or shutdown commands. You can also provide a custom dashboard or view name instead of the default `womgr`. When the first device is added, the integration creates a **HaWoManager** dashboard and inserts a Bubble Card for the device. Additional devices are appended to the chosen dashboard automatically. You may also set a pastel color for the device's button.
+=======
+
+
+## Usage
+
+```python
+from womgr import setup_device, remove_device
+
+entry = setup_device(
+    device_name="server",
+    mac="00:11:22:33:44:55",
+    ip="192.0.2.10",
+    location="Office",
+    os_type="linux",
+    color="rgb(200, 230, 255)",
+)
+# entry.entities now contains WakeOnLanSwitch,
+# PingBinarySensor and SystemCommandSwitch
+
+# later when the device should be removed
+remove_device(entry)
+```
+
+Wake-on-LAN packets are sent to `<broadcast>` on UDP port `9` by default.
+Use the optional `broadcast` and `port` arguments of `setup_device()` to
+override these values.
+The `color` argument lets you pick a pastel background for the Bubble Card button.
+
+
+## Home Assistant Integration
+
+After installing via HACS, add the **WoMgr** integration from the Integrations page.  The initial setup can be completed without specifying a device so you may install the integration first and add devices later.  Simply run **Add Integration** again for each machine you want to manage and enter its name, MAC address, IP, location and operating system.  Username and password remain optional and are only needed for restart or shutdown commands.  You can also provide a custom dashboard or view name instead of the default `womgr`.  When the first device is added, the integration creates a **HaWoManager** dashboard and inserts a Bubble Card for the device.  Additional devices are appended to the chosen dashboard automatically. You may also set a pastel color for the device's button.
+
+
 ### Example Dashboard
 
 Below is a minimal example using the community "Bubble Card".  An example file is provided at `lovelace/womgr_example.yaml`.  Import it into your dashboard or copy the following snippet:
@@ -58,4 +93,4 @@ This example assumes the device was added with the name `server`.
 
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md) for release notes. The latest release is **v0.0.7**.
+See [CHANGELOG.md](CHANGELOG.md) for release notes. The latest release is **v0.0.8**.

@@ -18,7 +18,7 @@ from homeassistant.components.lovelace.dashboard import (
 )
 
 from .core import setup_device, remove_device
-from womgr import pastel_color
+from .womgr import pastel_color
 
 from .const import DOMAIN
 
@@ -30,9 +30,8 @@ _dashboard_lock = asyncio.Lock()
 
 
 async def _async_update_dashboard(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Ensure a HaWoManager dashboard exists and contains the device card."""
-    if not entry.data:
-        return
+    """Ensure a HaWoManager dashboard exists and optionally contains a device card."""
+    view_path = (entry.data.get("dashboard") or "womgr") if entry.data else "womgr"
     lovelace = hass.data.get("lovelace")
     if not lovelace:
         return
@@ -46,8 +45,6 @@ async def _async_update_dashboard(hass: HomeAssistant, entry: ConfigEntry) -> No
 
     if dashboards_collection is None:
         return
-
-    view_path = entry.data.get("dashboard") or "womgr"
 
     async with _dashboard_lock:
         if view_path not in dashboards:
@@ -71,40 +68,41 @@ async def _async_update_dashboard(hass: HomeAssistant, entry: ConfigEntry) -> No
                 raise
 
         view = next((v for v in config.get("views", []) if v.get("path") == view_path), None)
-        color = entry.data.get("color") or pastel_color(entry.data["device_name"])
-        hash_tag = f"#{view_path}-{entry.data['device_name']}"
-        card = {
-            "type": "vertical-stack",
-            "title": entry.data["device_name"],
-            "cards": [
-                {
-                    "type": "custom:bubble-card",
-                    "card_type": "pop-up",
-                    "hash": hash_tag,
-                    "cards": [
-                        {"type": "entity", "entity": f"binary_sensor.{entry.data['device_name']}_ping"},
-                        {"type": "entity", "entity": f"switch.{entry.data['device_name']}_wake"},
-                        {"type": "button", "entity": f"button.{entry.data['device_name']}_restart"},
-                        {"type": "button", "entity": f"button.{entry.data['device_name']}_shutdown"},
-                    ],
-                },
-                {
-                    "type": "custom:bubble-card",
-                    "card_type": "button",
-                    "name": entry.data["device_name"],
-                    "icon": "mdi:server-network",
-                    "tap_action": {"action": "navigate", "navigation_path": hash_tag},
-                    "show_state": False,
-                    **({"style": f"ha-card {{ background-color: {color}; }}"}),
-                },
-            ],
-        }
+        if entry.data:
+            color = entry.data.get("color") or pastel_color(entry.data["device_name"])
+            hash_tag = f"#{view_path}-{entry.data['device_name']}"
+            card = {
+                "type": "vertical-stack",
+                "title": entry.data["device_name"],
+                "cards": [
+                    {
+                        "type": "custom:bubble-card",
+                        "card_type": "pop-up",
+                        "hash": hash_tag,
+                        "cards": [
+                            {"type": "entity", "entity": f"binary_sensor.{entry.data['device_name']}_ping"},
+                            {"type": "entity", "entity": f"switch.{entry.data['device_name']}_wake"},
+                            {"type": "button", "entity": f"button.{entry.data['device_name']}_restart"},
+                            {"type": "button", "entity": f"button.{entry.data['device_name']}_shutdown"},
+                        ],
+                    },
+                    {
+                        "type": "custom:bubble-card",
+                        "card_type": "button",
+                        "name": entry.data["device_name"],
+                        "icon": "mdi:server-network",
+                        "tap_action": {"action": "navigate", "navigation_path": hash_tag},
+                        "show_state": False,
+                        **({"style": f"ha-card {{ background-color: {color}; }}"}),
+                    },
+                ],
+            }
 
         if view is None:
-            view = {"path": view_path, "title": "HaWoManager", "cards": [card]}
+            view = {"path": view_path, "title": "HaWoManager", "cards": []}
             config.setdefault("views", []).append(view)
-        else:
-            view.setdefault("cards", [])
+        view.setdefault("cards", [])
+        if entry.data:
             for idx, existing in enumerate(view["cards"]):
                 if existing.get("title") == entry.data["device_name"]:
                     view["cards"][idx] = card
@@ -160,7 +158,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up WoMgr from a config entry."""
     hass.data.setdefault(DOMAIN, {})
     if not entry.data:
-        # Base configuration entry, nothing to set up yet
+        # Base configuration entry; create the dashboard so it's visible
+        hass.async_create_task(_async_update_dashboard(hass, entry))
         return True
 
     setup_args = {k: v for k, v in entry.data.items() if k != "dashboard"}

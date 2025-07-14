@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.0.8] - 2025-07-11
+### Added
+- Dashboard created during initial setup so **HaWoManager** appears in the sidebar
+
+The release is tagged as `v0.0.8`.
+
 ## [0.0.7] - 2025-06-14
 ### Added
 - CLI entry points for `womgr-cli` and `dashboard-cli` scripts

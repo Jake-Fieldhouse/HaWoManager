@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.0.10] - 2025-07-20
+### Added
+- REST API for device management and JSON import/export.
+- Interactive management panel showing device status and actions.
+- Config flow checks for duplicate IP addresses and allows specifying icon and area.
+
 ## [0.0.9] - 2025-07-12
 ### Added
 - Permanent sidebar panel for device management.

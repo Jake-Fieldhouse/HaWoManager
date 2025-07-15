@@ -27,8 +27,20 @@ ha.core.HomeAssistant = object
 ha.helpers = types.ModuleType("helpers")
 ha.helpers.typing = types.ModuleType("typing")
 ha.helpers.typing.ConfigType = dict
+ha.helpers.device_registry = types.ModuleType("device_registry")
+ha.helpers.device_registry.async_get = lambda hass: types.SimpleNamespace(
+    async_get_or_create=lambda **kw: types.SimpleNamespace(id="dev"),
+    async_update_device=lambda *a, **k: None,
+)
 ha.components = types.ModuleType("components")
 ha.components.http = types.ModuleType("http")
+class DummyView:
+    name = "dummy"
+    url = "/"
+    requires_auth = False
+    def __init__(self, hass=None):
+        pass
+ha.components.http.HomeAssistantView = DummyView
 
 @dataclass
 class StaticPathConfig:
@@ -115,4 +127,11 @@ class TestConfigFlow(unittest.TestCase):
         result = asyncio.run(flow.async_step_device(_valid_input(device_name="dev2")))
         self.assertEqual(result["type"], "abort")
         self.assertEqual(result["reason"], "duplicate_mac")
+
+    def test_step_device_duplicate_ip(self):
+        flow = WoMgrConfigFlow()
+        flow._async_current_entries = lambda: [SimpleNamespace(data=_valid_input())]
+        result = asyncio.run(flow.async_step_device(_valid_input(device_name="dev2", mac="11:22:33:44:55:66")))
+        self.assertEqual(result["type"], "abort")
+        self.assertEqual(result["reason"], "duplicate_ip")
 

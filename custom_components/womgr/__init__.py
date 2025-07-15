@@ -14,10 +14,12 @@ from homeassistant.components.lovelace.const import (
     CONF_URL_PATH,
 )
 from homeassistant.components.http import StaticPathConfig
+from .api import DevicesView, ExportView, ImportView
 from homeassistant.components.lovelace.dashboard import (
     DashboardsCollection,
     LovelaceStorage,
 )
+from homeassistant.helpers import device_registry as dr
 
 from .core import setup_device, remove_device
 from .womgr import pastel_color
@@ -168,6 +170,9 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         {"url": "/womgr-panel"},
         require_admin=True,
     )
+    hass.http.register_view(DevicesView(hass))
+    hass.http.register_view(ExportView(hass))
+    hass.http.register_view(ImportView(hass))
     return True
 
 
@@ -180,6 +185,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     setup_args = {k: v for k, v in entry.data.items() if k != "dashboard"}
     hass.data[DOMAIN][entry.entry_id] = setup_device(**setup_args)
+    dev_reg = dr.async_get(hass)
+    device = dev_reg.async_get_or_create(
+        config_entry_id=entry.entry_id,
+        identifiers={(DOMAIN, entry.entry_id)},
+        name=entry.data.get("device_name"),
+        manufacturer="HaWoManager",
+        model=entry.data.get("os_type"),
+    )
+    if area := entry.data.get("area"):
+        dev_reg.async_update_device(device.id, area_id=area)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     hass.async_create_task(_async_update_dashboard(hass, entry))
     return True

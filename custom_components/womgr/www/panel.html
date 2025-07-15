@@ -1,17 +1,72 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>HaWoManager</title>
+  <title>Wake On Lan Management</title>
   <meta charset="utf-8" />
+  <style>
+    body { font-family: sans-serif; margin: 1rem; }
+    .device { border: 1px solid #ccc; padding: 0.5rem; border-radius: 4px; margin-bottom: 1rem; }
+    .device h3 { margin: 0 0 0.5rem 0; }
+    button { margin-right: 0.5rem; }
+  </style>
+  <script>
+    async function loadDevices() {
+      const resp = await fetch('/api/womgr/devices');
+      const devs = await resp.json();
+      const container = document.getElementById('devices');
+      container.innerHTML = '';
+      if (!devs.length) {
+        container.innerHTML = '<p>No devices configured.</p>';
+        return;
+      }
+      devs.sort((a,b)=>a.device_name.localeCompare(b.device_name));
+      for (const d of devs) {
+        const card = document.createElement('div');
+        card.className = 'device';
+        card.innerHTML = `<h3>${d.device_name}</h3>`+
+          `<p>${d.ip} (${d.mac}) - <span class="status">${d.online ? 'Online' : 'Offline'}</span></p>`+
+          `<button onclick="deviceAction('${d.entry_id}','wake')">Wake</button>`+
+          `<button onclick="deviceAction('${d.entry_id}','restart')">Restart</button>`+
+          `<button onclick="deviceAction('${d.entry_id}','refresh')">Refresh</button>`;
+        container.appendChild(card);
+      }
+    }
+    async function deviceAction(id, action) {
+      await fetch('/api/womgr/devices', {method:'POST', body: JSON.stringify({entry_id:id, action})});
+      if (action === 'refresh') loadDevices();
+    }
+    async function exportDevices() {
+      const resp = await fetch('/api/womgr/export');
+      const data = await resp.json();
+      const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = 'devices.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+    function importDevices() {
+      document.getElementById('importFile').click();
+    }
+    async function handleImport(evt) {
+      const file = evt.target.files[0];
+      if (!file) return;
+      const text = await file.text();
+      await fetch('/api/womgr/import', {method:'POST', body:text});
+      loadDevices();
+    }
+    window.addEventListener('load', loadDevices);
+  </script>
 </head>
 <body>
-  <h1>HaWoManager Devices</h1>
+  <h1>Wake On Lan Management</h1>
+  <div id="devices"></div>
   <p>
-    Use this page to add or manage WoMgr devices. Click the button below to start
-    the integration flow for a new device.
+    <button onclick="location.href='/config/integrations/dashboard/add?domain=womgr'">Add Device</button>
   </p>
-  <button onclick="location.href='/config/integrations/dashboard/add?domain=womgr'">
-    Add Device
-  </button>
+  <p>
+    <button onclick="exportDevices()">Export</button>
+    <button onclick="importDevices()">Import</button>
+    <input id="importFile" type="file" style="display:none" onchange="handleImport(event)">
+  </p>
 </body>
 </html>

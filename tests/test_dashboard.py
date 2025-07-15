@@ -13,8 +13,20 @@ ha.core.HomeAssistant = object
 ha.helpers = types.ModuleType("helpers")
 ha.helpers.typing = types.ModuleType("typing")
 ha.helpers.typing.ConfigType = dict
+ha.helpers.device_registry = types.ModuleType("device_registry")
+ha.helpers.device_registry.async_get = lambda hass: types.SimpleNamespace(
+    async_get_or_create=lambda **kw: types.SimpleNamespace(id="dev"),
+    async_update_device=lambda *a, **k: None,
+)
 ha.components = types.ModuleType("components")
 ha.components.http = types.ModuleType("http")
+class DummyView:
+    name = "dummy"
+    url = "/"
+    requires_auth = False
+    def __init__(self, hass=None):
+        pass
+ha.components.http.HomeAssistantView = DummyView
 
 @dataclass
 class StaticPathConfig:

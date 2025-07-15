@@ -1,6 +1,6 @@
 # HaWoManager
 
-HaWoManager is a Home Assistant integration for managing network devices using Wake-on-LAN and optional restart or shutdown commands. It automatically creates a dedicated dashboard so your devices appear with status and controls.
+HaWoManager is a Home Assistant integration for managing network devices using Wake-on-LAN and optional restart or shutdown commands. It automatically creates a dedicated dashboard so your devices appear with status and controls. A sidebar entry **Wake On Lan Management** provides a full management UI where devices can be woken, restarted or refreshed directly.
 
 Entities created by the utilities follow the naming scheme
 `womgr_{device_name}_{entity}` so they can easily be grouped by device.
@@ -91,4 +91,4 @@ This example assumes the device was added with the name `server`.
 
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md) for release notes. The latest release is **v0.0.9**.
+See [CHANGELOG.md](CHANGELOG.md) for release notes. The latest release is **v0.0.10**.

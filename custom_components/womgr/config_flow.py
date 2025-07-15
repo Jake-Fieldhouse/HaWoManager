@@ -60,6 +60,8 @@ class WoMgrConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         return self.async_abort(reason="duplicate_device_name")
                     if entry.data.get("mac") == user_input["mac"]:
                         return self.async_abort(reason="duplicate_mac")
+                    if entry.data.get("ip") == user_input["ip"]:
+                        return self.async_abort(reason="duplicate_ip")
 
             if not errors:
                 return self.async_create_entry(
@@ -78,6 +80,8 @@ class WoMgrConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 vol.Optional("password", default=""): str,
                 vol.Optional("color", default=""): str,
                 vol.Optional("dashboard", default=""): str,
+                vol.Optional("icon", default="mdi:server-network"): str,
+                vol.Optional("area", default=""): str,
             }
         )
 

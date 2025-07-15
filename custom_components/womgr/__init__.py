@@ -162,7 +162,10 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     await hass.http.async_register_static_paths(
         [StaticPathConfig("/womgr-panel", panel_path, False)]
     )
-    hass.components.frontend.async_register_built_in_panel(
+    from homeassistant.components import frontend
+
+    frontend.async_register_built_in_panel(
+        hass,
         "iframe",
         "HaWoManager",
         "mdi:server-network",

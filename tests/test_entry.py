@@ -1,6 +1,7 @@
 import asyncio
 import sys
 import types
+from dataclasses import dataclass
 from types import SimpleNamespace
 
 # Stub minimal homeassistant modules required for import
@@ -13,6 +14,15 @@ ha.helpers = types.ModuleType("helpers")
 ha.helpers.typing = types.ModuleType("typing")
 ha.helpers.typing.ConfigType = dict
 ha.components = types.ModuleType("components")
+ha.components.http = types.ModuleType("http")
+
+@dataclass
+class StaticPathConfig:
+    url_path: str
+    path: str
+    cache_headers: bool = True
+
+ha.components.http.StaticPathConfig = StaticPathConfig
 lovelace = types.ModuleType("lovelace")
 lovelace.const = types.SimpleNamespace(
     CONF_ALLOW_SINGLE_WORD="allow_single_word",
@@ -47,6 +57,7 @@ sys.modules.setdefault("homeassistant.core", ha.core)
 sys.modules.setdefault("homeassistant.helpers", ha.helpers)
 sys.modules.setdefault("homeassistant.helpers.typing", ha.helpers.typing)
 sys.modules.setdefault("homeassistant.components", ha.components)
+sys.modules.setdefault("homeassistant.components.http", ha.components.http)
 sys.modules.setdefault("homeassistant.components.lovelace", lovelace)
 sys.modules.setdefault("homeassistant.components.lovelace.const", lovelace.const)
 sys.modules.setdefault("homeassistant.components.lovelace.dashboard", lovelace.dashboard)

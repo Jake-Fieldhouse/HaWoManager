@@ -13,6 +13,7 @@ from homeassistant.components.lovelace.const import (
     CONF_TITLE,
     CONF_URL_PATH,
 )
+from homeassistant.components.http import StaticPathConfig
 from homeassistant.components.lovelace.dashboard import (
     DashboardsCollection,
     LovelaceStorage,
@@ -156,7 +157,9 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     hass.data.setdefault(DOMAIN, {})
 
     panel_path = os.path.join(os.path.dirname(__file__), "www", "panel.html")
-    hass.http.register_static_path("/womgr-panel", panel_path, False)
+    await hass.http.async_register_static_paths(
+        [StaticPathConfig("/womgr-panel", panel_path, False)]
+    )
     hass.components.frontend.async_register_built_in_panel(
         "iframe",
         "HaWoManager",
